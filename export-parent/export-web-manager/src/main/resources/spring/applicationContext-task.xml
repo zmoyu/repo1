@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--将定时器任务类交给spring容器-->
+    <bean id="MyTask" class="com.zmy.web.task.MyTask"></bean>
+
+    <!--配置jobDetal ： 配置定时执行的类和方法-->
+    <bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <!--注入（引入）任务类-->
+        <property name="targetObject" ref="MyTask"/>
+        <!--注入任务方法-->
+        <property name="targetMethod" value="execute"/>
+    </bean>
+
+    <!--配置trigger，（触发器）处理触发时间和jobDetail的关系-->
+    <bean id="trigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <!--注入cron表达式-->
+        <property name="cronExpression" value="0/5 * * * * ? *"/>
+        <!--注入（引入）jobDetail-->
+        <property name="jobDetail" ref="jobDetail"/>
+    </bean>
+
+    <!--配置定时任务处理器-->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+           <array>
+               <!--（引入）触发器-->
+               <ref bean="trigger"/>
+           </array>
+        </property>
+    </bean>
+</beans>

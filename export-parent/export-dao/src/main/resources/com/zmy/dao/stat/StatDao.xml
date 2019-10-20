@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zmy.dao.stat.StatDao">
+
+    <select id="factorySale" resultType="map">
+         select p.factory_name `name`,sum(p.money) `value` from (
+               select factory_name,sum(amount) money from co_contract_product
+               where factory_name is not null group by factory_name
+               union all
+               select factory_name,sum(amount) money from co_ext_cproduct
+               where factory_name is not null group by factory_name
+               ) p group by p.factory_name
+    </select>
+
+    <select id="productSale" resultType="map">
+        SELECT product_no `name`,SUM(amount) `value` FROM co_contract_product
+        WHERE product_no!='' AND product_no IS NOT NULL
+        GROUP BY product_no
+        ORDER BY SUM(amount) DESC LIMIT #{top}
+    </select>
+
+    <select id="online" resultType="map">
+     SELECT so.a1 `name`,IFNULL(p.value,0) `value` FROM st_online_info so LEFT JOIN
+    (SELECT DATE_FORMAT(TIME,'%H') hours,COUNT(TIME) `value` FROM st_sys_log ss GROUP BY DATE_FORMAT(TIME,'%H'))
+     p ON so.a1=p.hours
+    </select>
+</mapper>

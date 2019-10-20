@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace 指定对哪个dao接口进行映射-->
+<mapper namespace="com.zmy.dao.system.DeptDao">
+
+    <resultMap id="BaseResultMap" type="com.zmy.domain.system.Dept">
+        <result column="dept_id" property="id"/>
+        <result column="dept_name" property="deptName"/>
+        <result column="state" property="state"/>
+        <result column="company_id" property="companyId"/>
+        <result column="company_name" property="companyName"/>
+        <!--
+           association 一对一关联查询
+               property    映射的对象属性（要给当前属性封装数据）
+               javaType    属性类型
+               column      1.对象映射到表对应的外键字段
+                           2.column对应的列值会自动作为select查询语句的参数
+               select      查询sql，会把查询结果赋值给property属性
+       -->
+        <association property="parent"
+                     javaType="com.zmy.domain.system.Dept"
+                     column="parent_id"
+                     select="com.zmy.dao.system.DeptDao.findById"/>
+
+    </resultMap>
+    <!--注意：因为在service需要通过PageHelper分页查询，所以这里sql一定不要有分号。会拼接limit，拼字符串出问题-->
+    <select id="findAllDept" resultMap="BaseResultMap">
+          select *from pe_dept where company_id = #{companyId}
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        select * from pe_dept where dept_id = #{id}
+    </select>
+
+
+    <insert id="save">
+    insert into pe_dept(dept_id,dept_name,parent_id,state,company_id,company_name)
+    VALUES (#{id},#{deptName},
+    <choose>
+        <when test="parent != null and parent.id !='' and parent.id != null">
+            #{parent.id},
+        </when>
+        <otherwise>null ,</otherwise>
+    </choose>
+        #{state},#{companyId},#{companyName})
+</insert>
+
+    <update id="update">
+    update pe_dept set
+    dept_name=#{deptName},
+    parent_id=
+    <choose>
+        <when test="parent != null and parent.id != '' and parent.id != null">
+            #{parent.id},
+        </when>
+        <otherwise>null,</otherwise>
+    </choose>
+    state=#{state},
+    company_id=#{companyId},
+    company_name=#{companyName}
+    where dept_id=#{id}
+</update>
+
+    <select id="findByParentId" resultMap="BaseResultMap">
+        SELECT * FROM pe_dept WHERE parent_id=#{parentId}
+    </select>
+
+    <delete id="delete">
+           DELETE FROM pe_dept WHERE dept_id=#{id}
+    </delete>
+</mapper>

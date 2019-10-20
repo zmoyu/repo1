@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--加载db.properties文件-->
+    <context:property-placeholder location="classpath:properties/db.properties"/>
+
+    <!--配置数据源对象(创建连接池)-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!--配置mybatis核心对象SqlSessionFactory-->
+    <bean id="SqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+
+      <!--  &lt;!&ndash;配置别名包扫描&ndash;&gt;
+        <property name="typeAliasesPackage" value="com.zmy.com.zmy.domain"/>-->
+
+        <!--配置mybatis分页拦截器插件-->
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <!--使用下面的方式配置参数，一行配置一个-->
+                        <value>
+                            HelperDialect:mysql
+                            reasonable:true
+                        </value>
+                    </property>
+
+                </bean>
+            </array>
+        </property>
+    </bean>
+
+    <!--配置扫描包接口代理对象：MapperScannerConfig-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--A. 自动加载类路径下com.zmy.dao目录下的映射文件-->
+        <!--B. 自动加载类路径下com.zmy.dao目录下的接口文件。-->
+        <!--C. 自动对该路径下的接口生成代理对象加入容器。-->
+        <property name="basePackage" value="com.zmy.dao"/>
+    </bean>
+</beans>

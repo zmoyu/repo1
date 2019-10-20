@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+
+
+	<!--1.配置监听器,通过监听器加载spring配置文件-->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<!--注意：这里一定要写classpath*，因为要加载各个项目的spring配置文件-->
+		<!--加载了哪些？ applicationContext-dao.xml-->
+		<!--加载了哪些？ applicationContext-tx.xml-->
+		<param-value>classpath*:spring/applicationContext-*.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<!--2.配置过滤器（字符编码过滤器）-->
+	<filter>
+		<filter-name>CharacterEncodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+
+		<!--设置过滤器字符编码集-->
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>CharacterEncodingFilter</filter-name>
+		<!--配置所有请求都经过过滤器-->
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!--3.配置前端控制器-->
+	<servlet>
+		<servlet-name>springmvc</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+
+		<!-- 指定加载的配置文件springmvc配置文件-->
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:spring/springmvc.xml</param-value>
+		</init-param>
+
+		<!--启动初始化-->
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>springmvc</servlet-name>
+		<!--配置拦截的url规则，说明：
+                           1.*.do，表示以.do结尾的请求进入前端控制器
+                         2./，表示所有请求都进入前端控制器-->
+      <url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+	
+	<!--4.shiro权限校验过滤器，这里的filter-name固定，对应spring容器中的过滤器工厂的bean的id-->
+	<filter>
+		<filter-name>shiroFilter</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+		<init-param>
+			<param-name>targetFilterLifecycle</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>shiroFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+</web-app>

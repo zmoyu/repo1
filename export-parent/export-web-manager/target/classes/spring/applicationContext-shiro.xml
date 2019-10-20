@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <description>spring和shiro整合</description>
+
+    <!--配置shiro的过滤器工厂，这里的bean的id匹配web.xml中的filter-name值-->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!--1.1 注入SecurityManager对象，安全管理器-->
+        <property name="securityManager" ref="securityManager"/>
+        <!--1.2 认证地址。（认证失败后。默认跳转到的登录页面在这里配置）-->
+        <property name="loginUrl" value="/login.jsp"/>
+        <!--1.3 认证成功后默认跳转的地址。如果认证成功程序中有指定地址，以程序指定的为主-->
+        <property name="successUrl" value="/index.jsp"/>
+        <!--1.4 授权校验失败，默认跳转到的地址-->
+        <property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+        <!--1.5 shiro过滤器配置-->
+        <property name="filterChainDefinitions">
+            <value>
+                <!--配置放行的资源-->
+                /css/** = anon
+                /img/** = anon
+                /make/** = anon
+                /plugins/** =anon
+                /login.jsp =anon
+                /login* =anon
+                /index.jsp =anon
+                /shiro-test.jsp =anon
+                <!--左边为访问的资源，右边为需要的权限-->
+                <!--/system/log/list.do = perms["日志管理"]-->
+                <!--其他资源都需要验证-->
+                /** = authc
+            </value>
+        </property>
+    </bean>
+
+    <bean id="lifecycleBeanPostProcessor"
+          class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor"/>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+
+    <!--2.创建SecurityManager对象-->
+    <bean id="securityManager"
+     class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!--注入自定义的realm-->
+           <property name="realm" ref="myRealm"/>
+    </bean>
+    <!--创建自定义的realm对象-->
+    <bean id="myRealm" class="com.zmy.web.shiro.AuthRealm">
+        <!--注入凭证匹配器，可以自动对用户输入的密码指定的算法进行加密-->
+        <property name="credentialsMatcher"
+                  ref="credentialsMatcher"></property>
+    </bean>
+
+    <!--4.创建凭证匹配器，指定加密算法-->
+   <!-- <bean id="credentialsMatcher"
+          class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+        &lt;!&ndash;自动对用户输入的面按照md5算法进行加密&ndash;&gt;
+        <property name="hashAlgorithmName" value="md5"></property>
+    </bean>-->
+
+    <!--4.1配置自定义凭证匹配器-->
+    <bean id="credentialsMatcher" class="com.zmy.web.shiro.CustomCredentialsMatcher">
+    </bean>
+</beans>
